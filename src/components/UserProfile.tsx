@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, MapPin, Star, Trophy, Edit, Users, Target, Timer, Award } from 'lucide-react';
+import { Calendar, MapPin, Star, Trophy, Edit, Users, Target, Timer, Award, Camera } from 'lucide-react';
 
 const UserProfile = () => {
   const [user] = useState({
@@ -14,8 +13,31 @@ const UserProfile = () => {
     age: 28,
     location: 'Bogotá, Colombia',
     joinDate: '2023-06-15',
-    bio: 'Apasionado del deporte desde pequeño. Me gusta competir y conocer gente nueva. Siempre con buena actitud y respeto por el deporte.'
+    bio: 'Apasionado del deporte desde pequeño. Me gusta competir y conocer gente nueva. Siempre con buena actitud y respeto por el deporte.',
+    backgroundImage: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop&crop=center'
   });
+
+  const backgroundOptions = [
+    {
+      name: 'Fútbol',
+      image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop&crop=center'
+    },
+    {
+      name: 'Básquet',
+      image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=400&fit=crop&crop=center'
+    },
+    {
+      name: 'Tenis',
+      image: 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?w=800&h=400&fit=crop&crop=center'
+    },
+    {
+      name: 'Gimnasio',
+      image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=400&fit=crop&crop=center'
+    }
+  ];
+
+  const [selectedBackground, setSelectedBackground] = useState(user.backgroundImage);
+  const [showBackgroundOptions, setShowBackgroundOptions] = useState(false);
 
   const sportsProfiles = [
     {
@@ -110,11 +132,53 @@ const UserProfile = () => {
 
   return (
     <div className="p-4 max-w-md mx-auto space-y-6">
-      {/* Profile Header */}
-      <Card className="animate-fade-in">
-        <CardHeader className="text-center">
+      {/* Profile Header with Background */}
+      <Card className="animate-fade-in overflow-hidden">
+        <div 
+          className="relative h-32 bg-cover bg-center"
+          style={{ backgroundImage: `url(${selectedBackground})` }}
+        >
+          <div className="absolute inset-0 bg-black/30"></div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowBackgroundOptions(!showBackgroundOptions)}
+            className="absolute top-2 right-2 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30"
+          >
+            <Camera className="w-4 h-4" />
+          </Button>
+        </div>
+        
+        {/* Background Options */}
+        {showBackgroundOptions && (
+          <div className="p-4 border-b bg-gray-50">
+            <h4 className="text-sm font-medium mb-3">Cambiar fondo</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {backgroundOptions.map((bg) => (
+                <button
+                  key={bg.name}
+                  onClick={() => {
+                    setSelectedBackground(bg.image);
+                    setShowBackgroundOptions(false);
+                  }}
+                  className="relative h-16 rounded-lg overflow-hidden border-2 hover:border-sport-red transition-colors"
+                  style={{
+                    borderColor: selectedBackground === bg.image ? 'hsl(var(--sport-red))' : 'transparent'
+                  }}
+                >
+                  <img src={bg.image} alt={bg.name} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                    <span className="text-white text-xs font-medium">{bg.name}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <CardHeader className="text-center relative -mt-12">
           <div className="flex justify-center mb-4">
-            <Avatar className="w-24 h-24">
+            <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
               <AvatarImage src={`https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face`} />
               <AvatarFallback className="text-2xl font-bold bg-sport-gradient text-white">
                 {user.name.split(' ').map(n => n[0]).join('')}
