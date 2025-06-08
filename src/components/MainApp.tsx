@@ -1,10 +1,11 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Home, Calendar, Users, User } from 'lucide-react';
+import { Home, Calendar, Users, User, Camera } from 'lucide-react';
 import MatchesList from './MatchesList';
 import CreateMatch from './CreateMatch';
 import UserProfile from './UserProfile';
+import SocialFeed from './SocialFeed';
 
 const MainApp = () => {
   const [activeTab, setActiveTab] = useState('matches');
@@ -15,6 +16,8 @@ const MainApp = () => {
         return <MatchesList />;
       case 'create':
         return <CreateMatch onBack={() => setActiveTab('matches')} />;
+      case 'feed':
+        return <SocialFeed />;
       case 'profile':
         return <UserProfile />;
       default:
@@ -59,6 +62,18 @@ const MainApp = () => {
           >
             <Home className="w-5 h-5" />
             <span className="text-xs">Partidos</span>
+          </Button>
+          
+          <Button
+            variant={activeTab === 'feed' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveTab('feed')}
+            className={`flex flex-col items-center gap-1 ${
+              activeTab === 'feed' ? 'bg-sport-red hover:bg-sport-red/90' : ''
+            }`}
+          >
+            <Camera className="w-5 h-5" />
+            <span className="text-xs">Feed</span>
           </Button>
           
           <Button

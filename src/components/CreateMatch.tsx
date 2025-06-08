@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Calendar, MapPin, Users, DollarSign } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Camera, Navigation } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface CreateMatchProps {
@@ -25,6 +24,9 @@ const CreateMatch = ({ onBack }: CreateMatchProps) => {
     price: '',
     description: ''
   });
+
+  const [venuePhotos, setVenuePhotos] = useState<string[]>([]);
+  const [gpsLocation, setGpsLocation] = useState<{lat: number, lng: number} | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +68,50 @@ const CreateMatch = ({ onBack }: CreateMatchProps) => {
       ...prev,
       [field]: value
     }));
+  };
+
+  const addVenuePhoto = () => {
+    // Simular agregar foto del lugar
+    const mockPhotoUrl = `https://images.unsplash.com/photo-157101961345${venuePhotos.length + 4}-1cb2f99b2d8b?w=300&h=200&fit=crop`;
+    setVenuePhotos(prev => [...prev, mockPhotoUrl]);
+  };
+
+  const removeVenuePhoto = (index: number) => {
+    setVenuePhotos(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setGpsLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+          toast({
+            title: "Ubicación obtenida",
+            description: "Ubicación actual capturada correctamente",
+          });
+        },
+        () => {
+          toast({
+            title: "Error",
+            description: "No se pudo obtener la ubicación",
+            variant: "destructive"
+          });
+        }
+      );
+    }
+  };
+
+  const openInMaps = () => {
+    if (gpsLocation) {
+      const url = `https://www.google.com/maps?q=${gpsLocation.lat},${gpsLocation.lng}`;
+      window.open(url, '_blank');
+    } else if (formData.location) {
+      const url = `https://www.google.com/maps/search/${encodeURIComponent(formData.location)}`;
+      window.open(url, '_blank');
+    }
   };
 
   return (
@@ -163,19 +209,88 @@ const CreateMatch = ({ onBack }: CreateMatchProps) => {
               </div>
             </div>
 
-            {/* Ubicación */}
+            {/* Ubicación con GPS */}
             <div className="space-y-2">
               <Label htmlFor="location">Ubicación *</Label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  id="location"
-                  placeholder="ej. Cancha Norte, Centro"
-                  className="pl-10"
-                  value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  required
-                />
+              <div className="space-y-2">
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    id="location"
+                    placeholder="ej. Cancha Norte, Centro"
+                    className="pl-10"
+                    value={formData.location}
+                    onChange={(e) => handleInputChange('location', e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={getCurrentLocation}
+                    className="flex items-center gap-1"
+                  >
+                    <Navigation className="w-4 h-4" />
+                    Mi ubicación
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={openInMaps}
+                    className="flex items-center gap-1"
+                  >
+                    <MapPin className="w-4 h-4" />
+                    Abrir en Maps
+                  </Button>
+                </div>
+                {gpsLocation && (
+                  <div className="text-xs text-green-600">
+                    Ubicación GPS: {gpsLocation.lat.toFixed(6)}, {gpsLocation.lng.toFixed(6)}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Fotos del lugar */}
+            <div className="space-y-2">
+              <Label>Fotos del lugar</Label>
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addVenuePhoto}
+                  className="flex items-center gap-2"
+                >
+                  <Camera className="w-4 h-4" />
+                  Agregar foto del lugar
+                </Button>
+                
+                {venuePhotos.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {venuePhotos.map((photo, index) => (
+                      <div key={index} className="relative">
+                        <img 
+                          src={photo} 
+                          alt={`Foto del lugar ${index + 1}`}
+                          className="w-full h-24 object-cover rounded"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeVenuePhoto(index)}
+                          className="absolute top-1 right-1 bg-black/50 text-white hover:bg-black/70 h-6 w-6 p-0"
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
