@@ -1,13 +1,22 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, MapPin, Users, Clock, Trophy, Star, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, Trophy, Star, AlertCircle, Timer } from 'lucide-react';
 
 const MyEvents = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Actualizar el tiempo cada minuto para el conteo regresivo
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Actualizar cada minuto
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Mock data para eventos registrados y creados
   const registeredEvents = [
@@ -80,28 +89,42 @@ const MyEvents = () => {
     }
   ];
 
-  const getStatusBadge = (status: string, date: string) => {
-    const eventDate = new Date(date);
-    const today = new Date();
-    const diffTime = eventDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const getEventStatus = (date: string, time: string) => {
+    const eventDate = new Date(`${date} ${time}`);
+    const now = currentTime;
+    const diffTime = eventDate.getTime() - now.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
 
-    if (diffDays < 0) {
-      return <Badge variant="secondary">Finalizado</Badge>;
+    if (diffTime < 0) {
+      return { status: 'finished', label: 'Finalizado', variant: 'secondary' as const, timeLeft: null };
+    } else if (diffTime <= 2 * 60 * 60 * 1000) { // Próximos 2 horas
+      return { 
+        status: 'starting-soon', 
+        label: 'Iniciando pronto', 
+        variant: 'destructive' as const, 
+        timeLeft: { hours: diffHours, minutes: diffMinutes } 
+      };
     } else if (diffDays === 0) {
-      return <Badge className="bg-orange-500">Hoy</Badge>;
+      return { status: 'today', label: 'Hoy', variant: 'default' as const, timeLeft: null };
     } else if (diffDays === 1) {
-      return <Badge className="bg-yellow-500">Mañana</Badge>;
+      return { status: 'tomorrow', label: 'Mañana', variant: 'outline' as const, timeLeft: null };
     } else if (diffDays <= 7) {
-      return <Badge className="bg-green-500">Esta semana</Badge>;
+      return { status: 'this-week', label: 'Esta semana', variant: 'outline' as const, timeLeft: null };
     } else {
-      return <Badge variant="outline">Próximo</Badge>;
+      return { status: 'upcoming', label: 'Próximo', variant: 'outline' as const, timeLeft: null };
     }
+  };
+
+  const getStatusBadge = (date: string, time: string) => {
+    const eventStatus = getEventStatus(date, time);
+    return <Badge variant={eventStatus.variant}>{eventStatus.label}</Badge>;
   };
 
   const getTimeUntilEvent = (date: string, time: string) => {
     const eventDate = new Date(`${date} ${time}`);
-    const now = new Date();
+    const now = currentTime;
     const diffTime = eventDate.getTime() - now.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -113,6 +136,26 @@ const MyEvents = () => {
     return `En ${diffDays} días`;
   };
 
+  const CountdownTimer = ({ date, time }: { date: string, time: string }) => {
+    const eventStatus = getEventStatus(date, time);
+    
+    if (eventStatus.status === 'starting-soon' && eventStatus.timeLeft) {
+      const { hours, minutes } = eventStatus.timeLeft;
+      return (
+        <div className="flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+          <Timer className="w-4 h-4 text-red-600 animate-pulse" />
+          <div className="text-sm">
+            <span className="font-semibold text-red-600">
+              Inicia en: {hours}h {minutes}m
+            </span>
+          </div>
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
   const sortEventsByDate = (events: any[]) => {
     return events.sort((a, b) => {
       const dateA = new Date(`${a.date} ${a.time}`);
@@ -121,66 +164,93 @@ const MyEvents = () => {
     });
   };
 
-  const EventCard = ({ event, isCreated = false }: { event: any, isCreated?: boolean }) => (
-    <Card 
-      className="animate-fade-in cursor-pointer hover:shadow-md transition-shadow"
-      onClick={() => setSelectedEvent(event)}
-    >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg">{event.title}</CardTitle>
-            <CardDescription className="mt-1">
-              {isCreated ? 'Creado por ti' : `Organizado por ${event.organizer}`}
-            </CardDescription>
+  const separateEventsByStatus = (events: any[]) => {
+    const upcoming = events.filter(event => {
+      const eventDate = new Date(`${event.date} ${event.time}`);
+      return eventDate.getTime() > currentTime.getTime();
+    });
+    
+    const finished = events.filter(event => {
+      const eventDate = new Date(`${event.date} ${event.time}`);
+      return eventDate.getTime() <= currentTime.getTime();
+    });
+
+    return { upcoming: sortEventsByDate(upcoming), finished: sortEventsByDate(finished) };
+  };
+
+  const EventCard = ({ event, isCreated = false }: { event: any, isCreated?: boolean }) => {
+    const eventStatus = getEventStatus(event.date, event.time);
+    const isFinished = eventStatus.status === 'finished';
+    
+    return (
+      <Card 
+        className={`animate-fade-in cursor-pointer hover:shadow-md transition-shadow ${
+          isFinished ? 'opacity-60 bg-gray-50' : ''
+        } ${eventStatus.status === 'starting-soon' ? 'ring-2 ring-red-300 shadow-lg' : ''}`}
+        onClick={() => setSelectedEvent(event)}
+      >
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className={`text-lg ${isFinished ? 'text-gray-500' : ''}`}>
+                {event.title}
+              </CardTitle>
+              <CardDescription className="mt-1">
+                {isCreated ? 'Creado por ti' : `Organizado por ${event.organizer}`}
+              </CardDescription>
+            </div>
+            <div className="flex flex-col gap-2">
+              {getStatusBadge(event.status, event.date)}
+              <Badge variant="outline" className="text-xs">
+                {event.level}
+              </Badge>
+            </div>
           </div>
-          <div className="flex flex-col gap-2">
-            {getStatusBadge(event.status, event.date)}
-            <Badge variant="outline" className="text-xs">
-              {event.level}
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-3">
-        <div className="text-sm text-gray-600 space-y-1">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            <span>{event.date} a las {event.time}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            <span className="font-medium text-sport-red">
-              {getTimeUntilEvent(event.date, event.time)}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4" />
-            <span>{event.location}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            <span>{event.participants}/{event.maxParticipants} participantes</span>
-          </div>
-        </div>
+        </CardHeader>
         
-        <div className="flex items-center justify-between pt-2">
-          <span className="font-semibold text-sport-red">{event.price}</span>
-          <div className="flex gap-2">
-            {isCreated && (
-              <Button variant="outline" size="sm">
-                Gestionar
-              </Button>
-            )}
-            <Button size="sm" className="bg-sport-gold hover:bg-sport-gold/90 text-sport-red">
-              Ver detalles
-            </Button>
+        <CardContent className="space-y-3">
+          <CountdownTimer date={event.date} time={event.time} />
+          
+          <div className="text-sm text-gray-600 space-y-1">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <span>{event.date} a las {event.time}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span className={`font-medium ${isFinished ? 'text-gray-400' : 'text-sport-red'}`}>
+                {getTimeUntilEvent(event.date, event.time)}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              <span>{event.location}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              <span>{event.participants}/{event.maxParticipants} participantes</span>
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+          
+          <div className="flex items-center justify-between pt-2">
+            <span className={`font-semibold ${isFinished ? 'text-gray-400' : 'text-sport-red'}`}>
+              {event.price}
+            </span>
+            <div className="flex gap-2">
+              {isCreated && !isFinished && (
+                <Button variant="outline" size="sm">
+                  Gestionar
+                </Button>
+              )}
+              <Button size="sm" className="bg-sport-gold hover:bg-sport-gold/90 text-sport-red">
+                Ver detalles
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   const EventDetails = ({ event }: { event: any }) => (
     <div className="space-y-4">
@@ -206,6 +276,8 @@ const MyEvents = () => {
         </CardHeader>
         
         <CardContent className="space-y-4">
+          <CountdownTimer date={event.date} time={event.time} />
+          
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <Calendar className="w-5 h-5 text-sport-red" />
@@ -282,6 +354,9 @@ const MyEvents = () => {
     );
   }
 
+  const { upcoming: upcomingRegistered, finished: finishedRegistered } = separateEventsByStatus(registeredEvents);
+  const { upcoming: upcomingCreated, finished: finishedCreated } = separateEventsByStatus(createdEvents);
+
   return (
     <div className="p-4 max-w-md mx-auto space-y-4">
       <div className="text-center mb-6">
@@ -298,17 +373,31 @@ const MyEvents = () => {
         </TabsList>
         
         <TabsContent value="registered" className="space-y-4 mt-4">
-          {registeredEvents.length > 0 ? (
+          {upcomingRegistered.length > 0 && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+              <div className="flex items-center gap-2 text-sm text-green-600 mb-4">
                 <AlertCircle className="w-4 h-4" />
-                <span>Próximos eventos ordenados por fecha</span>
+                <span>Próximos eventos ({upcomingRegistered.length})</span>
               </div>
-              {sortEventsByDate(registeredEvents).map((event) => (
+              {upcomingRegistered.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>
-          ) : (
+          )}
+          
+          {finishedRegistered.length > 0 && (
+            <div className="space-y-4 mt-6">
+              <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                <Clock className="w-4 h-4" />
+                <span>Eventos finalizados ({finishedRegistered.length})</span>
+              </div>
+              {finishedRegistered.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          )}
+          
+          {registeredEvents.length === 0 && (
             <div className="text-center py-8">
               <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">No te has registrado en ningún evento aún</p>
@@ -320,17 +409,31 @@ const MyEvents = () => {
         </TabsContent>
         
         <TabsContent value="created" className="space-y-4 mt-4">
-          {createdEvents.length > 0 ? (
+          {upcomingCreated.length > 0 && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+              <div className="flex items-center gap-2 text-sm text-green-600 mb-4">
                 <Star className="w-4 h-4" />
-                <span>Eventos que has organizado</span>
+                <span>Eventos próximos ({upcomingCreated.length})</span>
               </div>
-              {sortEventsByDate(createdEvents).map((event) => (
+              {upcomingCreated.map((event) => (
                 <EventCard key={event.id} event={event} isCreated={true} />
               ))}
             </div>
-          ) : (
+          )}
+          
+          {finishedCreated.length > 0 && (
+            <div className="space-y-4 mt-6">
+              <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                <Trophy className="w-4 h-4" />
+                <span>Eventos finalizados ({finishedCreated.length})</span>
+              </div>
+              {finishedCreated.map((event) => (
+                <EventCard key={event.id} event={event} isCreated={true} />
+              ))}
+            </div>
+          )}
+          
+          {createdEvents.length === 0 && (
             <div className="text-center py-8">
               <Trophy className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">No has creado ningún evento aún</p>
