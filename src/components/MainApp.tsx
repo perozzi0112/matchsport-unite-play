@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Home, Calendar, Users, User, Camera, Bell, Search as SearchIcon } from 'lucide-react';
+import { Home, Calendar, Users, User, Camera, Bell, Search as SearchIcon, CalendarCheck } from 'lucide-react';
 import MatchesList from './MatchesList';
 import CreateMatch from './CreateMatch';
 import UserProfile from './UserProfile';
@@ -9,6 +9,7 @@ import SocialFeed from './SocialFeed';
 import CreatePost from './CreatePost';
 import Notifications from './Notifications';
 import Search from './Search';
+import MyEvents from './MyEvents';
 
 const MainApp = () => {
   const [activeTab, setActiveTab] = useState('matches');
@@ -29,6 +30,8 @@ const MainApp = () => {
         return <Notifications onBack={() => setActiveTab('matches')} />;
       case 'search':
         return <Search onBack={() => setActiveTab('matches')} />;
+      case 'my-events':
+        return <MyEvents />;
       default:
         return <MatchesList />;
     }
@@ -99,6 +102,18 @@ const MainApp = () => {
             >
               <Home className="w-5 h-5" />
               <span className="text-xs">Partidos</span>
+            </Button>
+            
+            <Button
+              variant={activeTab === 'my-events' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveTab('my-events')}
+              className={`flex flex-col items-center gap-1 ${
+                activeTab === 'my-events' ? 'bg-sport-red hover:bg-sport-red/90' : ''
+              }`}
+            >
+              <CalendarCheck className="w-5 h-5" />
+              <span className="text-xs">Mis Eventos</span>
             </Button>
             
             <Button
