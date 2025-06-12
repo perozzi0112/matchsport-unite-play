@@ -110,45 +110,45 @@ const UserFeed = () => {
   ]);
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="max-w-md mx-auto bg-background min-h-screen">
       {/* Stories Section */}
       <div className="bg-sport-gradient p-4">
-        <div className="flex gap-4 overflow-x-auto pb-2">
+        <div className="flex gap-3 overflow-x-auto pb-2">
           {stories.map((story) => (
-            <div key={story.id} className="flex flex-col items-center gap-2 min-w-[70px]">
-              <div className={`relative ${story.hasNew ? 'ring-4 ring-sport-gold' : story.isOwn ? 'ring-2 ring-white/70' : 'ring-2 ring-white/40'} rounded-full p-1`}>
+            <div key={story.id} className="flex flex-col items-center gap-2 min-w-[60px]">
+              <div className={`relative ${story.hasNew ? 'ring-2 ring-sport-gold' : story.isOwn ? 'ring-2 ring-white/70' : 'ring-2 ring-white/40'} rounded-full p-1`}>
                 <img
                   src={story.avatar}
                   alt={story.user}
-                  className="w-14 h-14 rounded-full object-cover"
+                  className="w-12 h-12 rounded-full object-cover"
                 />
                 {story.isOwn && (
-                  <div className="absolute bottom-0 right-0 w-5 h-5 bg-sport-gold rounded-full flex items-center justify-center border-2 border-white">
+                  <div className="absolute bottom-0 right-0 w-4 h-4 bg-sport-gold rounded-full flex items-center justify-center border-2 border-white">
                     <span className="text-sport-red text-xs font-bold">+</span>
                   </div>
                 )}
               </div>
-              <span className="text-xs text-white text-center font-medium">{story.user}</span>
+              <span className="text-xs text-white text-center font-medium truncate w-full">{story.user}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Stats Section */}
-      <Card className="mx-4 -mt-6 relative z-10 shadow-lg">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-3 gap-6 text-center">
+      <Card className="mx-4 -mt-4 relative z-10 shadow-sm">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <h3 className="text-2xl font-bold text-sport-red">{posts.length}</h3>
-              <p className="text-gray-600 text-sm">Publicaciones</p>
+              <h3 className="text-xl font-bold text-sport-red">{posts.length}</h3>
+              <p className="text-muted-foreground text-sm">Publicaciones</p>
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-sport-red">1.2K</h3>
-              <p className="text-gray-600 text-sm">Seguidores</p>
+              <h3 className="text-xl font-bold text-sport-red">1.2K</h3>
+              <p className="text-muted-foreground text-sm">Seguidores</p>
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-sport-red">856</h3>
-              <p className="text-gray-600 text-sm">Siguiendo</p>
+              <h3 className="text-xl font-bold text-sport-red">856</h3>
+              <p className="text-muted-foreground text-sm">Siguiendo</p>
             </div>
           </div>
         </CardContent>
@@ -157,7 +157,7 @@ const UserFeed = () => {
       {/* View Toggle */}
       <div className="p-4">
         <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-white border border-gray-200">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger 
               value="grid" 
               className="data-[state=active]:bg-sport-red data-[state=active]:text-white"
@@ -178,7 +178,7 @@ const UserFeed = () => {
             {/* Posts Grid */}
             <div className="grid grid-cols-3 gap-1">
               {posts.map((post) => (
-                <div key={post.id} className="relative aspect-square group cursor-pointer rounded-lg overflow-hidden">
+                <div key={post.id} className="relative aspect-square group cursor-pointer rounded-md overflow-hidden">
                   <img
                     src={post.media[0]}
                     alt="Post"
@@ -188,7 +188,7 @@ const UserFeed = () => {
                   {/* Video Indicator */}
                   {post.isVideo && (
                     <div className="absolute top-2 right-2">
-                      <div className="w-6 h-6 bg-white/90 rounded-full flex items-center justify-center">
+                      <div className="w-5 h-5 bg-white/90 rounded-full flex items-center justify-center">
                         <Play className="w-3 h-3 text-sport-red fill-sport-red" />
                       </div>
                     </div>
@@ -197,21 +197,21 @@ const UserFeed = () => {
                   {/* Multiple Images Indicator */}
                   {post.media.length > 1 && !post.isVideo && (
                     <div className="absolute top-2 right-2">
-                      <div className="w-6 h-6 bg-white/90 rounded-full flex items-center justify-center">
+                      <div className="w-5 h-5 bg-white/90 rounded-full flex items-center justify-center">
                         <span className="text-sport-red text-xs font-bold">{post.media.length}</span>
                       </div>
                     </div>
                   )}
                   
                   {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-sport-red/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 rounded-lg">
+                  <div className="absolute inset-0 bg-sport-red/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 rounded-md">
                     <div className="flex items-center gap-1 text-white">
-                      <Heart className="w-5 h-5 fill-white" />
-                      <span className="font-semibold">{post.likes}</span>
+                      <Heart className="w-4 h-4 fill-white" />
+                      <span className="font-semibold text-sm">{post.likes}</span>
                     </div>
                     <div className="flex items-center gap-1 text-white">
-                      <MessageCircle className="w-5 h-5 fill-white" />
-                      <span className="font-semibold">{post.comments}</span>
+                      <MessageCircle className="w-4 h-4 fill-white" />
+                      <span className="font-semibold text-sm">{post.comments}</span>
                     </div>
                   </div>
                 </div>
@@ -223,30 +223,30 @@ const UserFeed = () => {
             {/* Tagged Posts */}
             <Card>
               <CardContent className="p-6 text-center">
-                <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-sport-gradient flex items-center justify-center">
-                  <Trophy className="w-12 h-12 text-white" />
+                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-sport-gradient flex items-center justify-center">
+                  <Trophy className="w-10 h-10 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-sport-red mb-2">¡Etiquetas Deportivas!</h3>
-                <p className="text-gray-600 mb-6">
+                <h3 className="text-lg font-bold text-sport-red mb-2">¡Etiquetas Deportivas!</h3>
+                <p className="text-muted-foreground mb-4 text-sm">
                   Aquí aparecerán las fotos donde te etiqueten en eventos deportivos y competencias.
                 </p>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <Card className="border-sport-red/20">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-2 mb-1">
                         <MapPin className="w-4 h-4 text-sport-red" />
-                        <span className="text-sm text-gray-700">Torneo Local</span>
+                        <span className="text-sm text-foreground">Torneo Local</span>
                       </div>
-                      <p className="text-xs text-gray-500">3 etiquetas</p>
+                      <p className="text-xs text-muted-foreground">3 etiquetas</p>
                     </CardContent>
                   </Card>
                   <Card className="border-sport-red/20">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-2 mb-1">
                         <Trophy className="w-4 h-4 text-sport-red" />
-                        <span className="text-sm text-gray-700">Liga Amateur</span>
+                        <span className="text-sm text-foreground">Liga Amateur</span>
                       </div>
-                      <p className="text-xs text-gray-500">1 etiqueta</p>
+                      <p className="text-xs text-muted-foreground">1 etiqueta</p>
                     </CardContent>
                   </Card>
                 </div>
