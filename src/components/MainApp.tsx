@@ -92,6 +92,7 @@ const MainApp = () => {
       {showBottomNav && (
         <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
           <div className="flex items-center justify-around max-w-md mx-auto py-2">
+            {/* Inicio (Feed) - First */}
             <Button
               variant={activeTab === 'feed' ? 'default' : 'ghost'}
               size="sm"
@@ -104,6 +105,7 @@ const MainApp = () => {
               <span className="text-xs">Inicio</span>
             </Button>
             
+            {/* Partidos - Second */}
             <Button
               variant={activeTab === 'matches' ? 'default' : 'ghost'}
               size="sm"
@@ -116,6 +118,7 @@ const MainApp = () => {
               <span className="text-xs">Partidos</span>
             </Button>
             
+            {/* Mis Eventos - Third */}
             <Button
               variant={activeTab === 'my-events' ? 'default' : 'ghost'}
               size="sm"
@@ -128,6 +131,7 @@ const MainApp = () => {
               <span className="text-xs">Mis Eventos</span>
             </Button>
             
+            {/* Crear - Fourth */}
             <Button
               variant={activeTab === 'create' ? 'default' : 'ghost'}
               size="sm"
@@ -140,6 +144,7 @@ const MainApp = () => {
               <span className="text-xs">Crear</span>
             </Button>
             
+            {/* Perfil - Fifth (Last) */}
             <Button
               variant={activeTab === 'profile' ? 'default' : 'ghost'}
               size="sm"
