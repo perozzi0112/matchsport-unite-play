@@ -12,28 +12,28 @@ import Search from './Search';
 import MyEvents from './MyEvents';
 
 const MainApp = () => {
-  const [activeTab, setActiveTab] = useState('matches');
+  const [activeTab, setActiveTab] = useState('feed');
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'matches':
-        return <MatchesList />;
-      case 'create':
-        return <CreateMatch onBack={() => setActiveTab('matches')} />;
       case 'feed':
         return <SocialFeed />;
+      case 'matches':
+        return <MatchesList />;
+      case 'my-events':
+        return <MyEvents />;
+      case 'create':
+        return <CreateMatch onBack={() => setActiveTab('matches')} />;
       case 'create-post':
         return <CreatePost onBack={() => setActiveTab('feed')} />;
       case 'profile':
         return <UserProfile />;
       case 'notifications':
-        return <Notifications onBack={() => setActiveTab('matches')} />;
+        return <Notifications onBack={() => setActiveTab('feed')} />;
       case 'search':
-        return <Search onBack={() => setActiveTab('matches')} />;
-      case 'my-events':
-        return <MyEvents />;
+        return <Search onBack={() => setActiveTab('feed')} />;
       default:
-        return <MatchesList />;
+        return <SocialFeed />;
     }
   };
 
@@ -93,6 +93,18 @@ const MainApp = () => {
         <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
           <div className="flex items-center justify-around max-w-md mx-auto py-2">
             <Button
+              variant={activeTab === 'feed' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveTab('feed')}
+              className={`flex flex-col items-center gap-1 ${
+                activeTab === 'feed' ? 'bg-sport-red hover:bg-sport-red/90' : ''
+              }`}
+            >
+              <Camera className="w-5 h-5" />
+              <span className="text-xs">Inicio</span>
+            </Button>
+            
+            <Button
               variant={activeTab === 'matches' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setActiveTab('matches')}
@@ -114,18 +126,6 @@ const MainApp = () => {
             >
               <CalendarCheck className="w-5 h-5" />
               <span className="text-xs">Mis Eventos</span>
-            </Button>
-            
-            <Button
-              variant={activeTab === 'feed' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setActiveTab('feed')}
-              className={`flex flex-col items-center gap-1 ${
-                activeTab === 'feed' ? 'bg-sport-red hover:bg-sport-red/90' : ''
-              }`}
-            >
-              <Camera className="w-5 h-5" />
-              <span className="text-xs">Feed</span>
             </Button>
             
             <Button
