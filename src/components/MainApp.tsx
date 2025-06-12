@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Home, Calendar, Users, User, Camera, Bell, Search as SearchIcon, CalendarCheck } from 'lucide-react';
+import { Home, Calendar, Users, User, Camera, Bell, Search as SearchIcon, CalendarCheck, Grid3X3 } from 'lucide-react';
 import MatchesList from './MatchesList';
 import CreateMatch from './CreateMatch';
 import UserProfile from './UserProfile';
@@ -10,6 +10,7 @@ import CreatePost from './CreatePost';
 import Notifications from './Notifications';
 import Search from './Search';
 import MyEvents from './MyEvents';
+import UserFeed from './UserFeed';
 
 const MainApp = () => {
   const [activeTab, setActiveTab] = useState('feed');
@@ -32,12 +33,14 @@ const MainApp = () => {
         return <Notifications onBack={() => setActiveTab('feed')} />;
       case 'search':
         return <Search onBack={() => setActiveTab('feed')} />;
+      case 'user-feed':
+        return <UserFeed />;
       default:
         return <SocialFeed />;
     }
   };
 
-  const showBottomNav = !['create', 'create-post', 'notifications', 'search'].includes(activeTab);
+  const showBottomNav = !['create', 'create-post', 'notifications', 'search', 'profile'].includes(activeTab);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -144,17 +147,17 @@ const MainApp = () => {
               <span className="text-xs">Crear</span>
             </Button>
             
-            {/* Perfil - Fifth (Last) */}
+            {/* Feed de Usuarios - Fifth (Last) */}
             <Button
-              variant={activeTab === 'profile' ? 'default' : 'ghost'}
+              variant={activeTab === 'user-feed' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setActiveTab('profile')}
+              onClick={() => setActiveTab('user-feed')}
               className={`flex flex-col items-center gap-1 ${
-                activeTab === 'profile' ? 'bg-sport-red hover:bg-sport-red/90' : ''
+                activeTab === 'user-feed' ? 'bg-sport-red hover:bg-sport-red/90' : ''
               }`}
             >
-              <Users className="w-5 h-5" />
-              <span className="text-xs">Perfil</span>
+              <Grid3X3 className="w-5 h-5" />
+              <span className="text-xs">Feed</span>
             </Button>
           </div>
         </nav>
