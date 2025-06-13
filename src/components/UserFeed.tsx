@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -187,7 +188,52 @@ const UserFeed = () => {
 
   return (
     <div className="max-w-md mx-auto bg-background min-h-screen">
-      {/* Sports Filter Section - MOVED TO TOP */}
+      {/* Stories Section - FIRST */}
+      <div className="bg-sport-gradient p-4">
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {stories.map((story) => (
+            <div key={story.id} className="flex flex-col items-center gap-2 min-w-[60px]">
+              <div className={`relative ${story.hasNew ? 'ring-2 ring-sport-gold' : story.isOwn ? 'ring-2 ring-white/70' : 'ring-2 ring-white/40'} rounded-full p-1`}>
+                <img
+                  src={story.avatar}
+                  alt={story.user}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                {story.isOwn && (
+                  <div className="absolute bottom-0 right-0 w-4 h-4 bg-sport-gold rounded-full flex items-center justify-center border-2 border-white">
+                    <span className="text-sport-red text-xs font-bold">+</span>
+                  </div>
+                )}
+              </div>
+              <span className="text-xs text-white text-center font-medium truncate w-full">{story.user}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats Section - SECOND */}
+      <Card className="mx-4 mt-4 shadow-sm">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <h3 className="text-xl font-bold text-sport-red">{filteredPosts.length}</h3>
+              <p className="text-muted-foreground text-sm">
+                {selectedSport === 'all' ? 'Publicaciones' : sports.find(s => s.id === selectedSport)?.name}
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-sport-red">1.2K</h3>
+              <p className="text-muted-foreground text-sm">Seguidores</p>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-sport-red">856</h3>
+              <p className="text-muted-foreground text-sm">Siguiendo</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sports Filter Section - THIRD */}
       <div className="p-4 bg-background border-b border-border">
         <h3 className="text-sm font-semibold text-foreground mb-3">Deportes</h3>
         <div className="flex gap-3 overflow-x-auto pb-2">
@@ -222,51 +268,6 @@ const UserFeed = () => {
           ))}
         </div>
       </div>
-
-      {/* Stories Section */}
-      <div className="bg-sport-gradient p-4">
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {stories.map((story) => (
-            <div key={story.id} className="flex flex-col items-center gap-2 min-w-[60px]">
-              <div className={`relative ${story.hasNew ? 'ring-2 ring-sport-gold' : story.isOwn ? 'ring-2 ring-white/70' : 'ring-2 ring-white/40'} rounded-full p-1`}>
-                <img
-                  src={story.avatar}
-                  alt={story.user}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                {story.isOwn && (
-                  <div className="absolute bottom-0 right-0 w-4 h-4 bg-sport-gold rounded-full flex items-center justify-center border-2 border-white">
-                    <span className="text-sport-red text-xs font-bold">+</span>
-                  </div>
-                )}
-              </div>
-              <span className="text-xs text-white text-center font-medium truncate w-full">{story.user}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Stats Section */}
-      <Card className="mx-4 mt-4 shadow-sm">
-        <CardContent className="p-4">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <h3 className="text-xl font-bold text-sport-red">{filteredPosts.length}</h3>
-              <p className="text-muted-foreground text-sm">
-                {selectedSport === 'all' ? 'Publicaciones' : sports.find(s => s.id === selectedSport)?.name}
-              </p>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-sport-red">1.2K</h3>
-              <p className="text-muted-foreground text-sm">Seguidores</p>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-sport-red">856</h3>
-              <p className="text-muted-foreground text-sm">Siguiendo</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* View Toggle */}
       <div className="p-4">
