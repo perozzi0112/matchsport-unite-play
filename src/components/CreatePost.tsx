@@ -5,17 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Image, Video, MapPin } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { usePosts } from '@/hooks/usePosts';
 
 interface CreatePostProps {
   onBack: () => void;
 }
 
 const CreatePost = ({ onBack }: CreatePostProps) => {
+  const { createPost } = usePosts();
   const [postText, setPostText] = useState('');
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!postText.trim()) {
       toast({
         title: "Error",
@@ -25,12 +28,38 @@ const CreatePost = ({ onBack }: CreatePostProps) => {
       return;
     }
 
-    toast({
-      title: "¡Post publicado!",
-      description: "Tu contenido ha sido compartido exitosamente",
-    });
-    
-    onBack();
+    setIsLoading(true);
+
+    try {
+      const { error } = await createPost({
+        content: postText,
+        media_url: selectedMedia,
+        media_type: mediaType,
+        location: null // TODO: Add location selection
+      });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Error al crear el post",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "¡Post publicado!",
+          description: "Tu contenido ha sido compartido exitosamente",
+        });
+        onBack();
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error inesperado al crear el post",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleMediaSelect = (type: 'image' | 'video') => {
@@ -140,9 +169,10 @@ const CreatePost = ({ onBack }: CreatePostProps) => {
             </Button>
             <Button 
               onClick={handleSubmit}
+              disabled={isLoading}
               className="flex-1 bg-sport-gold hover:bg-sport-gold/90 text-sport-red"
             >
-              Publicar
+              {isLoading ? "Publicando..." : "Publicar"}
             </Button>
           </div>
         </CardContent>

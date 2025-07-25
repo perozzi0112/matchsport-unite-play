@@ -1,7 +1,9 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Home, Calendar, Users, User, Camera, Bell, Search as SearchIcon, CalendarCheck, Grid3X3 } from 'lucide-react';
+import { Home, Calendar, Users, User, Camera, Bell, Search as SearchIcon, CalendarCheck, Grid3X3, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 import MatchesList from './MatchesList';
 import CreateMatch from './CreateMatch';
 import UserProfile from './UserProfile';
@@ -13,7 +15,24 @@ import MyEvents from './MyEvents';
 import UserFeed from './UserFeed';
 
 const MainApp = () => {
+  const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('feed');
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Sesión cerrada",
+        description: "Has cerrado sesión exitosamente"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al cerrar sesión",
+        variant: "destructive"
+      });
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -81,6 +100,16 @@ const MainApp = () => {
               className="rounded-full p-2"
             >
               <User className="w-5 h-5" />
+            </Button>
+
+            {/* Logout Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="rounded-full p-2 text-red-600 hover:text-red-700"
+            >
+              <LogOut className="w-5 h-5" />
             </Button>
           </div>
         </div>

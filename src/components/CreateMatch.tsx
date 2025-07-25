@@ -7,12 +7,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Camera, Navigation } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useMatches } from '@/hooks/useMatches';
+import { useSports } from '@/hooks/useSports';
 
 interface CreateMatchProps {
   onBack: () => void;
 }
 
 const CreateMatch = ({ onBack }: CreateMatchProps) => {
+  const { createMatch } = useMatches();
+  const { sports } = useSports();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     sport: '',
@@ -28,7 +33,7 @@ const CreateMatch = ({ onBack }: CreateMatchProps) => {
   const [venuePhotos, setVenuePhotos] = useState<string[]>([]);
   const [gpsLocation, setGpsLocation] = useState<{lat: number, lng: number} | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validación básica
@@ -41,26 +46,77 @@ const CreateMatch = ({ onBack }: CreateMatchProps) => {
       return;
     }
 
-    // Simular creación del partido
-    toast({
-      title: "¡Partido creado!",
-      description: "Tu partido ha sido publicado exitosamente",
-    });
-    
-    // Resetear formulario y volver
-    setFormData({
-      title: '',
-      sport: '',
-      level: '',
-      date: '',
-      time: '',
-      location: '',
-      maxParticipants: '',
-      price: '',
-      description: ''
-    });
-    
-    onBack();
+    setIsLoading(true);
+
+    try {
+      // Buscar el sport_id basado en el nombre seleccionado
+      const selectedSport = sports.find(sport => sport.name === formData.sport);
+      if (!selectedSport) {
+        toast({
+          title: "Error",
+          description: "Deporte no válido",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Combinar fecha y hora
+      const dateTime = new Date(`${formData.date}T${formData.time}`).toISOString();
+
+      const matchData = {
+        title: formData.title,
+        description: formData.description || null,
+        sport_id: selectedSport.id,
+        location: formData.location,
+        latitude: gpsLocation?.lat || null,
+        longitude: gpsLocation?.lng || null,
+        date_time: dateTime,
+        max_participants: parseInt(formData.maxParticipants),
+        price: formData.price ? parseFloat(formData.price) : 0,
+        skill_level: formData.level,
+        venue_photos: venuePhotos.length > 0 ? venuePhotos : null
+      };
+
+      const { error } = await createMatch(matchData);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Error al crear el partido",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "¡Partido creado!",
+          description: "Tu partido ha sido publicado exitosamente",
+        });
+        
+        // Resetear formulario y volver
+        setFormData({
+          title: '',
+          sport: '',
+          level: '',
+          date: '',
+          time: '',
+          location: '',
+          maxParticipants: '',
+          price: '',
+          description: ''
+        });
+        setVenuePhotos([]);
+        setGpsLocation(null);
+        
+        onBack();
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error inesperado al crear el partido",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -155,12 +211,11 @@ const CreateMatch = ({ onBack }: CreateMatchProps) => {
                     <SelectValue placeholder="Seleccionar" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Fútbol">Fútbol</SelectItem>
-                    <SelectItem value="Tenis">Tenis</SelectItem>
-                    <SelectItem value="Básquet">Básquet</SelectItem>
-                    <SelectItem value="Voleibol">Voleibol</SelectItem>
-                    <SelectItem value="Pádel">Pádel</SelectItem>
-                    <SelectItem value="Running">Running</SelectItem>
+                    {sports.map((sport) => (
+                      <SelectItem key={sport.id} value={sport.name}>
+                        {sport.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -353,9 +408,10 @@ const CreateMatch = ({ onBack }: CreateMatchProps) => {
               </Button>
               <Button 
                 type="submit" 
+                disabled={isLoading}
                 className="flex-1 bg-sport-gold hover:bg-sport-gold/90 text-sport-red"
               >
-                Crear Partido
+                {isLoading ? "Creando..." : "Crear Partido"}
               </Button>
             </div>
           </form>
